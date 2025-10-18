@@ -18,6 +18,10 @@ Audience: The target audience is an English-speaking congregation familiar with 
 Tone: Preserve the original's formal, pastoral, and reverent tone.
 
 Goal: The final translation must be theologically precise and suitable for being read aloud.
+
+Additional notes
+1. When numbers in the format of "8:1-10", they are translated to chapter 8, verses from 1 to 10.
+2. When bible cites are included, use NKJV in English when the target language is English. In the rest languages, use the Bible version that is most commonly used in that language.
 """
 LANGUAGES = os.environ["LANGUAGES"].split(",")
 
