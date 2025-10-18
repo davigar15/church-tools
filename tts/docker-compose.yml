@@ -1,0 +1,27 @@
+services:
+  translator:
+    build: .
+    container_name: translator
+    env_file: .env
+    volumes:
+      - ./original.txt:/app/original.txt
+      - ./translations:/app/translations
+    command: ["python", "translate.py"]
+
+  tts:
+    build: .
+    container_name: tts
+    env_file: .env
+    volumes:
+      - ./translations:/app/translations
+      - ./audio:/app/audio
+    command: ["python", "tts.py"]
+  streamer:
+    build: ./streamer
+    container_name: streamer
+    ports:
+      - "80:8000"
+    volumes:
+      - ./audio:/app/audio
+    cap_add:
+      - NET_BIND_SERVICE
