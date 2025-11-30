@@ -15,6 +15,7 @@ services:
     volumes:
       - ./translations:/app/translations
       - ./audio:/app/audio
+      - ./audio_cache:/app/audio_cache
     command: ["python", "tts.py"]
   streamer:
     build: ./streamer

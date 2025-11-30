@@ -18,7 +18,9 @@ Maintain warmth and authority in the voice.
 """
 AUDIO_DIR = pathlib.Path("./audio")
 TRANSLATIONS_DIR = pathlib.Path("./translations")
+AUDIO_CACHE_DIR = pathlib.Path("./audio_cache")  # <-- ADD THIS
 AUDIO_DIR.mkdir(exist_ok=True)
+AUDIO_CACHE_DIR.mkdir(exist_ok=True)  # <-- ADD THIS
 MAX_CHUNK_SIZE = 4000
 
 
@@ -54,7 +56,15 @@ def tts_file_for_language(lang: str):
     temp_files = []
 
     for i, section in enumerate(sections):
-        tmp = pathlib.Path(tempfile.gettempdir()) / f"{lang}_{i}.mp3"
+        tmp = AUDIO_CACHE_DIR / f"{lang}_{i}.mp3"
+        temp_files.append(tmp.resolve())
+
+        # --- THIS IS THE NEW CACHING LOGIC ---
+        if tmp.exists() and tmp.stat().st_size > 0:
+            print(f"  ✅ Found cache for section {i + 1}/{len(sections)}")
+            continue  # Skip to the next section
+        # --- END OF NEW LOGIC ---
+
         print(f"  ▶️  Converting section {i + 1}/{len(sections)}...")
 
         # Stream TTS to a temporary file
@@ -65,7 +75,6 @@ def tts_file_for_language(lang: str):
             instructions=INSTRUCTIONS,
         ) as response:
             response.stream_to_file(tmp)
-        temp_files.append(tmp)
 
     print(f"  🔗 Merging {len(temp_files)} sections...")
 
@@ -82,6 +91,7 @@ def merge_mp3s(temp_files: list[pathlib.Path], output_path: pathlib.Path):
     subprocess.run(
         [
             "ffmpeg",
+            "-y",
             "-f",
             "concat",
             "-safe",
@@ -93,13 +103,10 @@ def merge_mp3s(temp_files: list[pathlib.Path], output_path: pathlib.Path):
             str(output_path),
         ],
         check=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        capture_output=True,
     )
 
     list_file.unlink(missing_ok=True)
-    for tmp in temp_files:
-        tmp.unlink(missing_ok=True)
 
 
 def main():
